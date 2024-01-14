@@ -1,25 +1,37 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
-
-export enum UserRole {
-  Employee = 'Employee',
-  Admin = 'Admin',
-  ProjectManager = 'ProjectManager'
-}
+import {
+  Column,
+  DeepPartial,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ProjectUser } from '../../projects/entities/project-user.entity';
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
+  constructor(datas: DeepPartial<User>) {
+    Object.assign(this, datas);
+  }
 
-    @Column({ unique: true })
-    username: string
+  @PrimaryGeneratedColumn('uuid')
+  public id!: string; // au format uuidv4
 
-    @Column({ unique: true })
-    email: string
+  @Column({ unique: true, type: 'text' })
+  public username!: string; // cette propriété doit porter une contrainte d'unicité
 
-    @Column({ select: false })
-    password: string
+  @Column({ unique: true, type: 'text' })
+  public email!: string; // cette propriété doit porter une contrainte d'unicité
 
-    @Column({ default: UserRole.Employee })
-    role: UserRole
+  @Column({ type: 'text', select: false })
+  public password!: string;
+
+  @Column({
+    type: 'text',
+    enum: ['Employee', 'Admin', 'ProjectManager'],
+    default: 'Employee',
+  })
+  public role?: 'Employee' | 'Admin' | 'ProjectManager'; // valeur par defaut : 'Employee'
+
+  @OneToMany(() => ProjectUser, (projectUser) => projectUser.user)
+  public projectsUser: ProjectUser[];
 }
